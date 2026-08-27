@@ -1315,3 +1315,12 @@ button { font: inherit; cursor: pointer; }
 .event-draft { border-left: 3px solid #c98a12; }
 
 .badge-draft { background: #fff8e6; color: #8a5d05; }
+
+.sync-warn {
+  margin: 0;
+  padding: 10px 20px;
+  background: #fff8e6;
+  border-bottom: 1px solid #f0dca8;
+  color: #8a5d05;
+  font-size: 13px;
+}

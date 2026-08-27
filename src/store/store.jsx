@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { items as seedItems } from '../data/items.js'
 import { breakageReports as seedReports } from '../data/breakage.js'
 import { events as seedEvents } from '../data/events.js'
@@ -7,6 +7,7 @@ import { setups, menus, cocktails } from '../data/setups.js'
 const seedSetups = [...setups, ...menus, ...cocktails]
 import { realToday } from '../lib/inventory.js'
 import { WAREHOUSE_BY_CATEGORY } from '../data/warehouses.js'
+import { SYNCED, cloudEnabled, pushChanges, seed, watchAll } from '../lib/cloud.js'
 
 const STORAGE_KEY = 'cac-inventory-v2'
 const InventoryContext = createContext(null)
@@ -30,6 +31,9 @@ function reducer(state, action) {
   const now = state.simulatedDate ?? realToday()
 
   switch (action.type) {
+    case 'hydrate':
+      return { ...state, [action.payload.name]: action.payload.rows }
+
     case 'closeEvent': {
       const { eventId, lines, note, closedBy } = action.payload
       const clean = lines.filter((l) => l.qty > 0)
@@ -370,6 +374,11 @@ function load() {
 
 export function InventoryProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, null, load)
+  const [cloudError, setCloudError] = useState(null)
+  const remote = useRef(null)
+  const ready = useRef(!cloudEnabled)
+  const latest = useRef(state)
+  latest.current = state
 
   useEffect(() => {
     try {
@@ -378,11 +387,64 @@ export function InventoryProvider({ children }) {
     }
   }, [state])
 
+  useEffect(() => {
+    if (!cloudEnabled) return
+
+    const llegadas = new Set()
+    let sembrando = false
+    let vivo = true
+    let detener = null
+
+    watchAll(
+      (name, rows) => {
+        const primera = !llegadas.has(name)
+        llegadas.add(name)
+        remote.current = { ...(remote.current ?? {}), [name]: rows }
+
+        if (primera && rows.length === 0 && (latest.current[name] ?? []).length > 0) {
+          if (name === 'items' && !sembrando) {
+            sembrando = true
+            seed(latest.current).catch(() => setCloudError('No se pudo cargar el catálogo inicial.'))
+          }
+          if (llegadas.size === SYNCED.length) ready.current = true
+          return
+        }
+
+        dispatch({ type: 'hydrate', payload: { name, rows } })
+        if (llegadas.size === SYNCED.length) ready.current = true
+      },
+      () => setCloudError('Sin conexión con el servidor. Los cambios quedan en este dispositivo.')
+    )
+      .then((stop) => {
+        if (vivo) detener = stop
+        else stop()
+      })
+      .catch(() => setCloudError('No se pudo conectar con el servidor.'))
+
+    return () => {
+      vivo = false
+      if (detener) detener()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!cloudEnabled || !ready.current) return
+
+    pushChanges(remote.current, state)
+      .then((escritos) => {
+        if (escritos > 0) setCloudError(null)
+        remote.current = Object.fromEntries(SYNCED.map((n) => [n, state[n] ?? []]))
+      })
+      .catch(() => setCloudError('No se pudo guardar en el servidor. Revisá la conexión.'))
+  }, [state])
+
   const value = useMemo(() => {
     const itemById = Object.fromEntries(state.items.map((i) => [i.id, i]))
     const setupById = Object.fromEntries(state.setups.map((s) => [s.id, s]))
     const reportByEvent = Object.fromEntries(state.reports.map((r) => [r.eventId, r]))
     return {
+      cloudEnabled,
+      cloudError,
       today: state.simulatedDate ?? realToday(),
       role: state.role ?? 'admin',
       canEdit: (state.role ?? 'admin') === 'admin',
@@ -414,7 +476,7 @@ export function InventoryProvider({ children }) {
       setRole: (r) => dispatch({ type: 'setRole', payload: r }),
       reset: () => dispatch({ type: 'reset' })
     }
-  }, [state])
+  }, [state, cloudError])
 
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>
 }
