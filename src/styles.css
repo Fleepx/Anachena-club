@@ -1085,7 +1085,7 @@ button { font: inherit; cursor: pointer; }
 .report-head-btn:hover { background: #fafbfc; }
 .event-open .report-head-btn { border-bottom: 1px solid var(--border); }
 
-.kind-hint { margin: -8px 0 14px; font-size: 12.5px; color: var(--text-faint); }
+.kind-hint { margin: 8px 0 14px; font-size: 12.5px; color: var(--text-faint); }
 
 .row-selected { background: var(--accent-soft); }
 .table-compact tbody tr { cursor: default; }
@@ -1282,6 +1282,31 @@ button { font: inherit; cursor: pointer; }
 
 @media (max-width: 620px) {
   .bodega-sub { display: none; }
+}
+
+@media (max-width: 620px) {
+  .page-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .page-actions {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+  }
+
+  .page-actions .btn { flex: 1 1 auto; }
+
+  .month-select {
+    flex: 1 0 100%;
+    min-width: 0;
+  }
+
+  .month-select select {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .bodega-vacia { opacity: 0.5; }
