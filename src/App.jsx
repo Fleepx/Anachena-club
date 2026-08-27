@@ -45,7 +45,7 @@ function DateControl() {
 
 function Shell() {
   const [tab, setTab] = useState('summary')
-  const { canEdit, cloudError } = useInventory()
+  const { canEdit } = useInventory()
 
   const visibles = TABS.filter((t) => t.id !== 'finance' || canEdit)
   const activa = visibles.some((t) => t.id === tab) ? tab : 'summary'
@@ -77,8 +77,6 @@ function Shell() {
             ))}
           </nav>
         </header>
-
-        {cloudError && <p className="sync-warn">{cloudError}</p>}
 
         <main className="content" key={activa}>
           {activa === 'summary' && <Dashboard onGoTo={setTab} />}
