@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react'
 import { CATEGORIES } from '../data/items.js'
 import { warehouses, warehouseById } from '../data/warehouses.js'
+
+const enBodega = (item, id) =>
+  item.stock ? item.stock[id] ?? 0 : item.warehouse === id ? item.stockOnHand : 0
+
+const estaEn = (item, id) => (item.stock ? (item.stock[id] ?? 0) > 0 : item.warehouse === id)
+
+const repartido = (item) =>
+  item.stock && Object.values(item.stock).filter((n) => n > 0).length > 1
 import { useInventory } from '../store/store.jsx'
 import { clp, totalYield } from '../lib/inventory.js'
 import AddItemForm from './AddItemForm.jsx'
@@ -19,13 +27,13 @@ export default function InventoryView({ type, title, subtitle }) {
 
   const visible = pool.filter((i) => {
     const matchCat = category === 'all' || i.category === category
-    const matchBod = bodega === 'all' || i.warehouse === bodega
+    const matchBod = bodega === 'all' || estaEn(i, bodega)
     const matchText = i.name.toLowerCase().includes(query.trim().toLowerCase())
     return matchCat && matchBod && matchText
   })
 
   const conteoPorBodega = Object.fromEntries(
-    warehouses.map((w) => [w.id, pool.filter((i) => i.warehouse === w.id).length])
+    warehouses.map((w) => [w.id, pool.filter((i) => estaEn(i, w.id)).length])
   )
 
   const isFood = type === 'consumable'
@@ -197,8 +205,20 @@ export default function InventoryView({ type, title, subtitle }) {
                     </span>
                   </td>
                   <td className="num">
-                    <span className={low ? 'qty qty-low' : 'qty'}>{i.stockOnHand}</span>
-                    <span className="unit">{i.unit}</span>
+                    <span className={low ? 'qty qty-low' : 'qty'}>
+                      {bodega === 'all' ? i.stockOnHand : enBodega(i, bodega)}
+                    </span>
+                    <span className="unit">
+                      {bodega === 'all' ? i.unit : 'de ' + i.stockOnHand}
+                    </span>
+                    {bodega === 'all' && repartido(i) && (
+                      <span className="unit reparto">
+                        {warehouses
+                          .filter((w) => enBodega(i, w.id) > 0)
+                          .map((w) => enBodega(i, w.id) + ' ' + w.name.toLowerCase())
+                          .join(' · ')}
+                      </span>
+                    )}
                   </td>
                   <td className="num">
                     {isFood ? (
@@ -235,7 +255,12 @@ export default function InventoryView({ type, title, subtitle }) {
                   )}
                   <td className="hide-sm">
                     <span className="cell-name">
-                      {warehouseById[i.warehouse]?.name ?? 'Sin bodega'}
+                      {i.stock
+                        ? warehouses
+                            .filter((w) => enBodega(i, w.id) > 0)
+                            .map((w) => w.name)
+                            .join(' y ') || 'Sin stock'
+                        : warehouseById[i.warehouse]?.name ?? 'Sin bodega'}
                     </span>
                     {i.detail && <span className="cell-unit">{i.detail}</span>}
                   </td>

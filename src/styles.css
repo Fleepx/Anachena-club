@@ -1415,3 +1415,11 @@ button { font: inherit; cursor: pointer; }
   background: #c0392b;
   box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.18);
 }
+
+.unit.reparto {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
