@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { InventoryProvider, useInventory } from './store/store.jsx'
 import { formatDate, realToday } from './lib/inventory.js'
+import SyncPanel from './components/SyncPanel.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import MonthlyPlan from './components/MonthlyPlan.jsx'
 import InventoryView from './components/InventoryView.jsx'
@@ -45,7 +46,8 @@ function DateControl() {
 
 function Shell() {
   const [tab, setTab] = useState('summary')
-  const { canEdit } = useInventory()
+  const { canEdit, syncOn, syncError, syncing } = useInventory()
+  const [conectando, setConectando] = useState(false)
 
   const visibles = TABS.filter((t) => t.id !== 'finance' || canEdit)
   const activa = visibles.some((t) => t.id === tab) ? tab : 'summary'
@@ -64,6 +66,12 @@ function Shell() {
               </div>
             </div>
             <DateControl />
+            <button
+              className={syncOn ? 'sync-chip sync-chip-on' : 'sync-chip'}
+              onClick={() => setConectando(true)}
+            >
+              {syncOn ? (syncing ? 'Guardando...' : 'Sincronizado') : 'Solo este equipo'}
+            </button>
           </div>
           <nav className="tabs">
             {visibles.map((t) => (
@@ -77,6 +85,14 @@ function Shell() {
             ))}
           </nav>
         </header>
+
+        {syncError && <p className="sync-warn">{syncError}</p>}
+
+        {conectando && (
+          <div className="content">
+            <SyncPanel onDone={() => setConectando(false)} />
+          </div>
+        )}
 
         <main className="content" key={activa}>
           {activa === 'summary' && <Dashboard onGoTo={setTab} />}

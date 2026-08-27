@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { items as seedItems } from '../data/items.js'
 import { breakageReports as seedReports } from '../data/breakage.js'
 import { events as seedEvents } from '../data/events.js'
@@ -7,6 +7,15 @@ import { setups, menus, cocktails } from '../data/setups.js'
 const seedSetups = [...setups, ...menus, ...cocktails]
 import { realToday } from '../lib/inventory.js'
 import { WAREHOUSE_BY_CATEGORY } from '../data/warehouses.js'
+import {
+  SYNCED,
+  clearConfig,
+  headSha,
+  readAll,
+  readConfig,
+  saveConfig,
+  writeChanged
+} from '../lib/gitstore.js'
 
 const STORAGE_KEY = 'cac-inventory-v2'
 const InventoryContext = createContext(null)
@@ -30,6 +39,9 @@ function reducer(state, action) {
   const now = state.simulatedDate ?? realToday()
 
   switch (action.type) {
+    case 'hydrate':
+      return { ...state, ...action.payload }
+
     case 'closeEvent': {
       const { eventId, lines, note, closedBy } = action.payload
       const clean = lines.filter((l) => l.qty > 0)
@@ -368,8 +380,20 @@ function load() {
   }
 }
 
+const INTERVALO_MS = 12000
+
 export function InventoryProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, null, load)
+  const [config, setConfigState] = useState(readConfig)
+  const [syncError, setSyncError] = useState(null)
+  const [syncing, setSyncing] = useState(false)
+
+  const shas = useRef({})
+  const remote = useRef(null)
+  const commit = useRef(null)
+  const ready = useRef(false)
+  const latest = useRef(state)
+  latest.current = state
 
   useEffect(() => {
     try {
@@ -378,11 +402,121 @@ export function InventoryProvider({ children }) {
     }
   }, [state])
 
+  const aplicar = (slices) => {
+    remote.current = slices
+    dispatch({ type: 'hydrate', payload: slices })
+  }
+
+  useEffect(() => {
+    if (!config) {
+      ready.current = false
+      return
+    }
+
+    let vivo = true
+    let timer = null
+
+    const fallo = (e) => {
+      if (vivo) setSyncError(e.message)
+    }
+
+    const primeraCarga = async () => {
+      const { slices, shas: leidos } = await readAll(config)
+      if (!vivo) return
+
+      shas.current = leidos
+
+      const vacio = !slices.items || slices.items.length === 0
+      if (vacio) {
+        const semilla = Object.fromEntries(SYNCED.map((n) => [n, latest.current[n] ?? []]))
+        await writeChanged(config, null, semilla, shas.current, 'Cargar datos iniciales')
+        remote.current = semilla
+      } else {
+        aplicar(slices)
+      }
+
+      commit.current = await headSha(config)
+      ready.current = true
+      setSyncError(null)
+    }
+
+    const revisar = async () => {
+      const sha = await headSha(config)
+      if (!vivo || sha === commit.current) return
+      const { slices, shas: leidos } = await readAll(config)
+      if (!vivo) return
+      shas.current = leidos
+      commit.current = sha
+      aplicar(slices)
+    }
+
+    primeraCarga()
+      .then(() => {
+        timer = setInterval(() => revisar().catch(fallo), INTERVALO_MS)
+      })
+      .catch(fallo)
+
+    return () => {
+      vivo = false
+      if (timer) clearInterval(timer)
+    }
+  }, [config])
+
+  useEffect(() => {
+    if (!config || !ready.current) return
+
+    let cancelado = false
+    const id = setTimeout(async () => {
+      try {
+        setSyncing(true)
+        const escritos = await writeChanged(config, remote.current, state, shas.current)
+        if (cancelado) return
+
+        if (escritos.length > 0) {
+          remote.current = Object.fromEntries(SYNCED.map((n) => [n, state[n] ?? []]))
+          commit.current = await headSha(config)
+        }
+        setSyncError(null)
+      } catch (e) {
+        if (cancelado) return
+        if (e.status === 409 || /guardó primero/.test(e.message)) {
+          const { slices, shas: leidos } = await readAll(config).catch(() => ({}))
+          if (slices) {
+            shas.current = leidos
+            aplicar(slices)
+          }
+          setSyncError('Otro dispositivo guardó primero. Se recargaron los datos: repetí lo último que hiciste.')
+        } else {
+          setSyncError(e.message)
+        }
+      } finally {
+        if (!cancelado) setSyncing(false)
+      }
+    }, 600)
+
+    return () => {
+      cancelado = true
+      clearTimeout(id)
+    }
+  }, [state, config])
+
   const value = useMemo(() => {
     const itemById = Object.fromEntries(state.items.map((i) => [i.id, i]))
     const setupById = Object.fromEntries(state.setups.map((s) => [s.id, s]))
     const reportByEvent = Object.fromEntries(state.reports.map((r) => [r.eventId, r]))
     return {
+      syncOn: Boolean(config),
+      syncError,
+      syncing,
+      connect: (cfg) => {
+        saveConfig(cfg)
+        setConfigState(cfg)
+      },
+      disconnect: () => {
+        clearConfig()
+        setConfigState(null)
+        setSyncError(null)
+      },
       today: state.simulatedDate ?? realToday(),
       role: state.role ?? 'admin',
       canEdit: (state.role ?? 'admin') === 'admin',
@@ -414,7 +548,7 @@ export function InventoryProvider({ children }) {
       setRole: (r) => dispatch({ type: 'setRole', payload: r }),
       reset: () => dispatch({ type: 'reset' })
     }
-  }, [state])
+  }, [state, config, syncError, syncing])
 
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>
 }
