@@ -4,26 +4,10 @@ export const setups = [
     name: 'Boda',
     kind: 'setup',
     lines: [
-      { itemId: 'chair-tiffany', perGuest: 1 },
-      { itemId: 'chair-cover', perGuest: 1 },
-      { itemId: 'table-round', perGuest: 0.1 },
-      { itemId: 'tablecloth', perGuest: 0.1 },
-      { itemId: 'napkin-cloth', perGuest: 1 },
-      { itemId: 'plate-base', perGuest: 1 },
-      { itemId: 'plate-main', perGuest: 1 },
+      { itemId: 'plate-28', perGuest: 1 },
+      { itemId: 'plate-26', perGuest: 1 },
       { itemId: 'plate-dessert', perGuest: 1 },
       { itemId: 'cup-coffee', perGuest: 1 },
-      { itemId: 'glass-water', perGuest: 1 },
-      { itemId: 'glass-wine-red', perGuest: 1 },
-      { itemId: 'glass-wine-white', perGuest: 1 },
-      { itemId: 'glass-champagne', perGuest: 1 },
-      { itemId: 'fork-main', perGuest: 1 },
-      { itemId: 'knife-main', perGuest: 1 },
-      { itemId: 'spoon-main', perGuest: 1 },
-      { itemId: 'fork-dessert', perGuest: 1 },
-      { itemId: 'speaker', qty: 2 },
-      { itemId: 'mic-wireless', qty: 2 },
-      { itemId: 'par-light', qty: 8 }
     ]
   },
   {
@@ -31,20 +15,8 @@ export const setups = [
     name: 'Graduación',
     kind: 'setup',
     lines: [
-      { itemId: 'chair-tiffany', perGuest: 1 },
-      { itemId: 'table-round', perGuest: 0.1 },
-      { itemId: 'tablecloth', perGuest: 0.1 },
-      { itemId: 'plate-main', perGuest: 1 },
+      { itemId: 'plate-26', perGuest: 1 },
       { itemId: 'plate-dessert', perGuest: 1 },
-      { itemId: 'glass-water', perGuest: 1 },
-      { itemId: 'glass-long', perGuest: 1 },
-      { itemId: 'fork-main', perGuest: 1 },
-      { itemId: 'knife-main', perGuest: 1 },
-      { itemId: 'spoon-main', perGuest: 1 },
-      { itemId: 'speaker', qty: 2 },
-      { itemId: 'mic-wireless', qty: 3 },
-      { itemId: 'projector', qty: 1 },
-      { itemId: 'par-light', qty: 6 }
     ]
   },
   {
@@ -52,24 +24,9 @@ export const setups = [
     name: 'Gala corporativa',
     kind: 'setup',
     lines: [
-      { itemId: 'chair-tiffany', perGuest: 1 },
-      { itemId: 'chair-cover', perGuest: 1 },
-      { itemId: 'table-round', perGuest: 0.1 },
-      { itemId: 'tablecloth', perGuest: 0.1 },
-      { itemId: 'napkin-cloth', perGuest: 1 },
-      { itemId: 'plate-base', perGuest: 1 },
-      { itemId: 'plate-main', perGuest: 1 },
+      { itemId: 'plate-28', perGuest: 1 },
+      { itemId: 'plate-26', perGuest: 1 },
       { itemId: 'plate-dessert', perGuest: 1 },
-      { itemId: 'glass-water', perGuest: 1 },
-      { itemId: 'glass-wine-red', perGuest: 1 },
-      { itemId: 'glass-champagne', perGuest: 1 },
-      { itemId: 'fork-main', perGuest: 1 },
-      { itemId: 'knife-main', perGuest: 1 },
-      { itemId: 'fork-dessert', perGuest: 1 },
-      { itemId: 'speaker', qty: 2 },
-      { itemId: 'mic-wireless', qty: 2 },
-      { itemId: 'projector', qty: 1 },
-      { itemId: 'par-light', qty: 10 }
     ]
   },
   {
@@ -77,18 +34,8 @@ export const setups = [
     name: 'Cumpleaños',
     kind: 'setup',
     lines: [
-      { itemId: 'chair-tiffany', perGuest: 1 },
-      { itemId: 'table-round', perGuest: 0.1 },
-      { itemId: 'tablecloth', perGuest: 0.1 },
-      { itemId: 'plate-main', perGuest: 1 },
+      { itemId: 'plate-26', perGuest: 1 },
       { itemId: 'plate-dessert', perGuest: 1 },
-      { itemId: 'glass-long', perGuest: 1 },
-      { itemId: 'glass-water', perGuest: 1 },
-      { itemId: 'fork-main', perGuest: 1 },
-      { itemId: 'knife-main', perGuest: 1 },
-      { itemId: 'speaker', qty: 2 },
-      { itemId: 'mic-wireless', qty: 1 },
-      { itemId: 'par-light', qty: 6 }
     ]
   }
 ]

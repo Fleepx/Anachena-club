@@ -18,13 +18,7 @@ export const CATEGORIES = {
 }
 
 export const items = [
-  { id: 'chair-tiffany', name: 'Silla Tiffany', type: 'asset', category: 'seating', unit: 'unidad', stockOnHand: 280, stockOut: 0, stockBroken: 14, unitCost: 18000, warehouse: 'exterior', detail: '' },
-  { id: 'table-round', name: 'Mesa redonda 10p', type: 'asset', category: 'seating', unit: 'unidad', stockOnHand: 30, stockOut: 0, stockBroken: 1, unitCost: 85000, warehouse: 'exterior', detail: '' },
-  { id: 'table-rect', name: 'Mesa rectangular', type: 'asset', category: 'seating', unit: 'unidad', stockOnHand: 12, stockOut: 0, stockBroken: 0, unitCost: 70000, warehouse: 'exterior', detail: '' },
 
-  { id: 'tablecloth', name: 'Mantel redondo', type: 'asset', category: 'linen', unit: 'unidad', stockOnHand: 34, stockOut: 0, stockBroken: 3, unitCost: 22000, warehouse: 'casa', detail: '' },
-  { id: 'napkin-cloth', name: 'Servilleta de tela', type: 'asset', category: 'linen', unit: 'unidad', stockOnHand: 240, stockOut: 0, stockBroken: 20, unitCost: 2500, warehouse: 'casa', detail: '' },
-  { id: 'chair-cover', name: 'Funda de silla', type: 'asset', category: 'linen', unit: 'unidad', stockOnHand: 260, stockOut: 0, stockBroken: 8, unitCost: 4000, warehouse: 'casa', detail: '' },
 
   { id: 'plate-28', name: 'Plato 28 cm', type: 'asset', category: 'tableware', unit: 'unidad', stock: { casa: 210, exterior: 139 }, stockOnHand: 349, stockOut: 0, stockBroken: 0, unitCost: 5500, warehouse: 'casa', detail: '' },
   { id: 'plate-26', name: 'Plato 26 cm', type: 'asset', category: 'tableware', unit: 'unidad', stock: { casa: 205, exterior: 0 }, stockOnHand: 205, stockOut: 0, stockBroken: 0, unitCost: 4800, warehouse: 'casa', detail: '' },
@@ -44,21 +38,8 @@ export const items = [
   { id: 'brulee-small', name: 'Quembrule chico', type: 'asset', category: 'tableware', unit: 'unidad', stock: { casa: 99, exterior: 0 }, stockOnHand: 99, stockOut: 0, stockBroken: 0, unitCost: 3000, warehouse: 'casa', detail: '' },
   { id: 'cup-coffee', name: 'Taza de café', type: 'asset', category: 'tableware', unit: 'unidad', stock: { casa: 132, exterior: 0 }, stockOnHand: 132, stockOut: 0, stockBroken: 0, unitCost: 3200, warehouse: 'casa', detail: '' },
 
-  { id: 'glass-water', name: 'Copa de agua', type: 'asset', category: 'glassware', unit: 'unidad', stockOnHand: 242, stockOut: 0, stockBroken: 22, unitCost: 2900, warehouse: 'casa', detail: '' },
-  { id: 'glass-wine-red', name: 'Copa de vino tinto', type: 'asset', category: 'glassware', unit: 'unidad', stockOnHand: 210, stockOut: 0, stockBroken: 30, unitCost: 3100, warehouse: 'casa', detail: '' },
-  { id: 'glass-wine-white', name: 'Copa de vino blanco', type: 'asset', category: 'glassware', unit: 'unidad', stockOnHand: 195, stockOut: 0, stockBroken: 17, unitCost: 3100, warehouse: 'casa', detail: '' },
-  { id: 'glass-champagne', name: 'Copa de champagne', type: 'asset', category: 'glassware', unit: 'unidad', stockOnHand: 160, stockOut: 0, stockBroken: 25, unitCost: 3400, warehouse: 'casa', detail: '' },
-  { id: 'glass-long', name: 'Vaso largo', type: 'asset', category: 'glassware', unit: 'unidad', stockOnHand: 220, stockOut: 0, stockBroken: 14, unitCost: 2100, warehouse: 'casa', detail: '' },
 
-  { id: 'fork-main', name: 'Tenedor', type: 'asset', category: 'cutlery', unit: 'unidad', stockOnHand: 255, stockOut: 0, stockBroken: 6, unitCost: 1800, warehouse: 'casa', detail: '' },
-  { id: 'knife-main', name: 'Cuchillo', type: 'asset', category: 'cutlery', unit: 'unidad', stockOnHand: 248, stockOut: 0, stockBroken: 5, unitCost: 2200, warehouse: 'casa', detail: '' },
-  { id: 'spoon-main', name: 'Cuchara', type: 'asset', category: 'cutlery', unit: 'unidad', stockOnHand: 251, stockOut: 0, stockBroken: 7, unitCost: 1800, warehouse: 'casa', detail: '' },
-  { id: 'fork-dessert', name: 'Tenedor de postre', type: 'asset', category: 'cutlery', unit: 'unidad', stockOnHand: 205, stockOut: 0, stockBroken: 4, unitCost: 1500, warehouse: 'casa', detail: '' },
 
-  { id: 'speaker', name: 'Parlante activo', type: 'asset', category: 'equipment', unit: 'unidad', stockOnHand: 4, stockOut: 0, stockBroken: 0, unitCost: 380000, warehouse: 'casa', detail: 'Sala técnica', serialized: true },
-  { id: 'mic-wireless', name: 'Micrófono inalámbrico', type: 'asset', category: 'equipment', unit: 'unidad', stockOnHand: 6, stockOut: 0, stockBroken: 1, unitCost: 145000, warehouse: 'casa', detail: 'Sala técnica', serialized: true },
-  { id: 'projector', name: 'Proyector', type: 'asset', category: 'equipment', unit: 'unidad', stockOnHand: 2, stockOut: 0, stockBroken: 0, unitCost: 520000, warehouse: 'casa', detail: 'Sala técnica', serialized: true },
-  { id: 'par-light', name: 'Foco PAR LED', type: 'asset', category: 'equipment', unit: 'unidad', stockOnHand: 16, stockOut: 0, stockBroken: 2, unitCost: 45000, warehouse: 'casa', detail: 'Sala técnica' },
 
   { id: 'beef', name: 'Lomo vetado', type: 'consumable', category: 'meat', unit: 'kg', stockOnHand: 45, minStock: 30, unitCost: 12500, warehouse: 'insumos', detail: 'Cámara de frío', yieldRate: 0.75, cookingYield: 0.84 },
   { id: 'chicken', name: 'Pechuga de pollo', type: 'consumable', category: 'meat', unit: 'kg', stockOnHand: 38, minStock: 25, unitCost: 6800, warehouse: 'insumos', detail: 'Cámara de frío', yieldRate: 0.9, cookingYield: 0.75 },

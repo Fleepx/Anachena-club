@@ -17,7 +17,7 @@ import {
   writeChanged
 } from '../lib/gitstore.js'
 
-const STORAGE_KEY = 'cac-inventory-v4'
+const STORAGE_KEY = 'cac-inventory-v5'
 const InventoryContext = createContext(null)
 
 function aplicarBajas(items, lines) {

@@ -38,7 +38,19 @@ export default function InventoryView({ type, title, subtitle }) {
 
   const bodegasDelPanel = warehouses.filter((w) => conteoPorBodega[w.id] > 0)
 
+
   const isFood = type === 'consumable'
+  const separarPorBodega = !isFood && bodega === 'all' && bodegasDelPanel.length > 1
+
+  const grupos = separarPorBodega
+    ? bodegasDelPanel.map((w) => ({
+        id: w.id,
+        titulo: w.name,
+        detalle: w.desc,
+        items: visible.filter((i) => estaEn(i, w.id))
+      }))
+    : [{ id: bodega, titulo: null, detalle: null, items: visible }]
+
   const alerts = pool.filter((i) =>
     isFood ? i.stockOnHand < (i.minStock ?? 0) : i.stockBroken > 0
   )
@@ -162,7 +174,14 @@ export default function InventoryView({ type, title, subtitle }) {
         </div>
       </div>
 
-      <div className="table-wrap">
+      {grupos.map((g) => (
+      <div className="table-wrap" key={g.id ?? 'todo'}>
+        {g.titulo && (
+          <div className="grupo-bodega">
+            <h3>{g.titulo}</h3>
+            <span>{g.items.length} items</span>
+          </div>
+        )}
         <table className="table">
           <thead>
             <tr>
@@ -195,7 +214,7 @@ export default function InventoryView({ type, title, subtitle }) {
             </tr>
           </thead>
           <tbody>
-            {visible.map((i) => {
+            {g.items.map((i) => {
               const low = isFood && i.stockOnHand < (i.minStock ?? 0)
               return (
                 <tr key={i.id} className={low ? 'row-low' : undefined}>
@@ -208,12 +227,12 @@ export default function InventoryView({ type, title, subtitle }) {
                   </td>
                   <td className="num">
                     <span className={low ? 'qty qty-low' : 'qty'}>
-                      {bodega === 'all' ? i.stockOnHand : enBodega(i, bodega)}
+                      {g.id === 'all' ? i.stockOnHand : enBodega(i, g.id)}
                     </span>
                     <span className="unit">
-                      {bodega === 'all' ? i.unit : 'de ' + i.stockOnHand}
+                      {g.id === 'all' ? i.unit : 'de ' + i.stockOnHand}
                     </span>
-                    {bodega === 'all' && repartido(i) && (
+                    {g.id === 'all' && repartido(i) && (
                       <span className="unit reparto">
                         {warehouses
                           .filter((w) => enBodega(i, w.id) > 0)
@@ -271,7 +290,7 @@ export default function InventoryView({ type, title, subtitle }) {
             })}
           </tbody>
         </table>
-        {visible.length === 0 && (
+        {g.items.length === 0 && (
           <p className="empty">
             {bodega !== 'all' && conteoPorBodega[bodega] === 0
               ? 'La ' +
@@ -283,6 +302,7 @@ export default function InventoryView({ type, title, subtitle }) {
           </p>
         )}
       </div>
+      ))}
     </>
   )
 }
