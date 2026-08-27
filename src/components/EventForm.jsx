@@ -3,6 +3,8 @@ import { useInventory } from '../store/store.jsx'
 import { HALL_CAPACITY } from '../data/config.js'
 import { formatDate, isPast, clp } from '../lib/inventory.js'
 
+const OTRO = '__otro'
+
 export default function EventForm({ onDone }) {
   const { events, setups: templates, createEvent, today } = useInventory()
 
@@ -11,7 +13,8 @@ export default function EventForm({ onDone }) {
   const cocktails = templates.filter((t) => t.kind === 'cocktail')
 
   const [clientName, setClientName] = useState('')
-  const [typeName, setTypeName] = useState(setups[0].name)
+  const [typeId, setTypeId] = useState(setups[0].id)
+  const [newTypeName, setNewTypeName] = useState('')
   const [basedOn, setBasedOn] = useState(setups[0].id)
   const [menuId, setMenuId] = useState(menus[0]?.id ?? '')
   const [cocktailId, setCocktailId] = useState('')
@@ -34,7 +37,8 @@ export default function EventForm({ onDone }) {
     priceMode === 'total' && guests > 0 ? Math.round(priceValue / guests) : priceValue
   const totalEvento = perGuest * guests
 
-  const typed = typeName.trim()
+  const escribiendoTipo = typeId === OTRO
+  const typed = escribiendoTipo ? newTypeName.trim() : setups.find((s) => s.id === typeId)?.name ?? ''
   const match = setups.find((s) => s.name.toLowerCase() === typed.toLowerCase())
   const isNewType = typed.length > 0 && !match
 
@@ -109,23 +113,42 @@ export default function EventForm({ onDone }) {
 
         <label>
           <span>Tipo de evento</span>
-          <input
-            type="text"
-            list="tipos-de-evento"
-            value={typeName}
-            placeholder="Boda, bautizo, aniversario..."
-            onChange={(e) => setTypeName(e.target.value)}
-          />
-          <datalist id="tipos-de-evento">
+          <select value={typeId} onChange={(e) => setTypeId(e.target.value)}>
             {setups.map((s) => (
-              <option key={s.id} value={s.name} />
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
             ))}
-          </datalist>
+            <option value={OTRO}>Otro (escribir)</option>
+          </select>
         </label>
+
+        {escribiendoTipo && (
+          <label>
+            <span>Nombre del tipo</span>
+            <input
+              type="text"
+              value={newTypeName}
+              placeholder="Bautizo, aniversario..."
+              onChange={(e) => setNewTypeName(e.target.value)}
+            />
+          </label>
+        )}
 
         <label>
           <span>Fecha</span>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          {sameDay.length > 0 && (
+            <span className="field-warn field-warn-strong">
+              Ya hay {sameDay.length === 1 ? 'un evento' : sameDay.length + ' eventos'} ese día:{' '}
+              {sameDay.map((e) => e.clientName).join(' · ')}. El salón es uno solo.
+            </span>
+          )}
+          {inThePast && (
+            <span className="field-warn">
+              Esta fecha ya pasó: entra como evento realizado, pendiente de parte de roturas.
+            </span>
+          )}
         </label>
 
         <label>
@@ -142,6 +165,11 @@ export default function EventForm({ onDone }) {
             placeholder="0"
             onChange={(e) => setGuestCount(e.target.value)}
           />
+          {overCapacity && (
+            <span className="field-warn">
+              Supera la capacidad del salón ({HALL_CAPACITY}).
+            </span>
+          )}
         </label>
 
         <label>
@@ -239,31 +267,12 @@ export default function EventForm({ onDone }) {
         </label>
       </div>
 
-      {(sameDay.length > 0 || overCapacity || inThePast || isNewType) && (
+      {isNewType && (
         <div className="form-warnings">
-          {isNewType && (
-            <p className="warn warn-info">
-              «{typed}» es un tipo nuevo. Va a arrancar con el mismo montaje que{' '}
-              {setups.find((s) => s.id === basedOn)?.name} y después se ajusta.
-            </p>
-          )}
-          {sameDay.length > 0 && (
-            <p className="warn warn-strong">
-              Ya hay {sameDay.length === 1 ? 'un evento' : sameDay.length + ' eventos'} ese
-              día: {sameDay.map((e) => e.clientName).join(' · ')}. El salón es uno solo.
-            </p>
-          )}
-          {overCapacity && (
-            <p className="warn">
-              {guests} personas supera la capacidad del salón ({HALL_CAPACITY}).
-            </p>
-          )}
-          {inThePast && (
-            <p className="warn">
-              La fecha ya pasó. Va a entrar directo como evento realizado, pendiente de
-              parte de roturas.
-            </p>
-          )}
+          <p className="warn warn-info">
+            «{typed}» es un tipo nuevo. Va a arrancar con el mismo montaje que{' '}
+            {setups.find((s) => s.id === basedOn)?.name} y después se ajusta.
+          </p>
         </div>
       )}
 

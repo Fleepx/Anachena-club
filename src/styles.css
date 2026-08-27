@@ -1388,3 +1388,16 @@ button { font: inherit; cursor: pointer; }
   background: #fff8e6;
   color: #8a5d05;
 }
+
+.field-warn {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: #8a5d05;
+}
+
+.field-warn-strong {
+  font-weight: 600;
+  color: #a3341f;
+}
