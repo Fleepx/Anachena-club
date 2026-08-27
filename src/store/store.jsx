@@ -440,9 +440,23 @@ export function InventoryProvider({ children }) {
       setSyncError(null)
     }
 
+    const sinSubir = () =>
+      SYNCED.some(
+        (n) =>
+          JSON.stringify(latest.current[n] ?? []) !== JSON.stringify(remote.current?.[n] ?? [])
+      )
+
     const revisar = async () => {
       const sha = await headSha(config)
       if (!vivo || sha === commit.current) return
+
+      if (sinSubir()) {
+        setSyncError(
+          'Hay cambios de este equipo que todavía no se subieron. Se pausó la actualización para no perderlos.'
+        )
+        return
+      }
+
       const { slices, shas: leidos } = await readAll(config)
       if (!vivo) return
       shas.current = leidos
