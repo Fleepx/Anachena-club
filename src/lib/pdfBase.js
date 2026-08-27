@@ -13,7 +13,7 @@ export const dmy = (iso) => {
   return `${d}-${m}-${y}`
 }
 
-const LOGO_URL = '/brand/logo-pdf.png'
+const LOGO_URL = import.meta.env.BASE_URL + 'brand/logo-pdf.png'
 
 let loader = null
 export async function loadJsPDF() {

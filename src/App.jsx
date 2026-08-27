@@ -55,10 +55,10 @@ function Shell() {
       <header className="topbar">
           <div className="topbar-inner">
             <div className="brand">
-              <img className="brand-mark" src="/brand/isotipo.png" alt="" />
+              <img className="brand-mark" src={import.meta.env.BASE_URL + 'brand/isotipo.png'} alt="" />
               <div className="brand-text">
                 <h1>
-                  <img className="brand-word" src="/brand/wordmark-negro.png" alt="Anachena" />
+                  <img className="brand-word" src={import.meta.env.BASE_URL + 'brand/wordmark-negro.png'} alt="Anachena" />
                 </h1>
                 <p>Salón de eventos · Inventario</p>
               </div>
