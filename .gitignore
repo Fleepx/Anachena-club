@@ -6,4 +6,5 @@ dist
 firebase-adminsdk*.json
 .firebase
 *.md
+!README.md
 .claude/
