@@ -78,7 +78,12 @@ function mensaje(status, detalle) {
 
 export async function checkAccess(cfg) {
   const repo = await api(cfg, '')
-  if (!repo) throw new Error('No se encontró el repositorio. Revisá el usuario y el nombre.')
+  if (!repo) {
+    throw new Error(
+      'No se llegó al repositorio. Si el nombre está bien, el token no lo tiene incluido: ' +
+        'revisá que esté seleccionado en la lista del token.'
+    )
+  }
   if (!repo.permissions?.push) throw new Error('El token puede leer pero no escribir en este repositorio.')
   return true
 }

@@ -62,7 +62,6 @@ export default function SyncPanel({ onDone }) {
       <div className="form-head">
         <div>
           <h3>Conectar este equipo</h3>
-          <p>Mientras no esté conectado, lo que cargues acá no lo ve ningún otro dispositivo.</p>
         </div>
       </div>
 

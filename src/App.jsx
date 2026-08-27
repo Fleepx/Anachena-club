@@ -55,10 +55,6 @@ function Bienvenida({ onLocal }) {
           src={import.meta.env.BASE_URL + 'brand/wordmark-negro.png'}
           alt="Anachena"
         />
-        <p className="welcome-lead">
-          Conectá este equipo para trabajar con la misma información que el resto de los
-          dispositivos.
-        </p>
         <SyncPanel onDone={onLocal} />
       </div>
     </div>
