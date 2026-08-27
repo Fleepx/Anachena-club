@@ -71,6 +71,7 @@ function mensaje(status, detalle) {
   if (status === 401) return 'El token no es válido o venció.'
   if (status === 403 && /rate limit/i.test(detalle)) return 'GitHub cortó por exceso de consultas. Esperá un minuto.'
   if (status === 403) return 'El token no tiene permiso de escritura sobre este repositorio.'
+  if (status === 409 && /empty/i.test(detalle)) return 'El repositorio de datos todavía está vacío.'
   if (status === 409 || /sha/i.test(detalle)) return 'Otro dispositivo guardó primero.'
   return 'GitHub respondió ' + status + '.'
 }
@@ -83,8 +84,13 @@ export async function checkAccess(cfg) {
 }
 
 export async function headSha(cfg) {
-  const commits = await api(cfg, 'commits?per_page=1')
-  return commits?.[0]?.sha ?? null
+  try {
+    const commits = await api(cfg, 'commits?per_page=1')
+    return commits?.[0]?.sha ?? null
+  } catch (e) {
+    if (e.status === 409) return null
+    throw e
+  }
 }
 
 export async function readAll(cfg) {
