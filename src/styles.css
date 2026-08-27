@@ -1398,6 +1398,20 @@ button { font: inherit; cursor: pointer; }
 }
 
 .field-warn-strong {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
   font-weight: 600;
   color: #a3341f;
+}
+
+.field-warn-strong::before {
+  content: '';
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.18);
 }
