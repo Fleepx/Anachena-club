@@ -36,6 +36,8 @@ export default function InventoryView({ type, title, subtitle }) {
     warehouses.map((w) => [w.id, pool.filter((i) => estaEn(i, w.id)).length])
   )
 
+  const bodegasDelPanel = warehouses.filter((w) => conteoPorBodega[w.id] > 0)
+
   const isFood = type === 'consumable'
   const alerts = pool.filter((i) =>
     isFood ? i.stockOnHand < (i.minStock ?? 0) : i.stockBroken > 0
@@ -121,7 +123,7 @@ export default function InventoryView({ type, title, subtitle }) {
             <span className="bodega-letra">Todo</span>
             <span className="bodega-n">{pool.length}</span>
           </button>
-          {warehouses.map((w) => {
+          {bodegasDelPanel.map((w) => {
             const n = conteoPorBodega[w.id]
             return (
               <button
@@ -215,7 +217,7 @@ export default function InventoryView({ type, title, subtitle }) {
                       <span className="unit reparto">
                         {warehouses
                           .filter((w) => enBodega(i, w.id) > 0)
-                          .map((w) => enBodega(i, w.id) + ' ' + w.name.toLowerCase())
+                          .map((w) => enBodega(i, w.id) + ' ' + w.subtitle.toLowerCase())
                           .join(' · ')}
                       </span>
                     )}
