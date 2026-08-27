@@ -44,13 +44,48 @@ function DateControl() {
   )
 }
 
+const SIN_SYNC_KEY = 'cac_sin_sync'
+
+function Bienvenida({ onLocal }) {
+  return (
+    <div className="welcome">
+      <div className="welcome-box">
+        <img
+          className="welcome-logo"
+          src={import.meta.env.BASE_URL + 'brand/wordmark-negro.png'}
+          alt="Anachena"
+        />
+        <p className="welcome-lead">
+          Conectá este equipo para trabajar con la misma información que el resto de los
+          dispositivos.
+        </p>
+        <SyncPanel onDone={onLocal} />
+      </div>
+    </div>
+  )
+}
+
 function Shell() {
   const [tab, setTab] = useState('summary')
   const { canEdit, syncOn, syncError, syncing } = useInventory()
   const [conectando, setConectando] = useState(false)
+  const [soloLocal, setSoloLocal] = useState(
+    () => localStorage.getItem(SIN_SYNC_KEY) === '1'
+  )
 
   const visibles = TABS.filter((t) => t.id !== 'finance' || canEdit)
   const activa = visibles.some((t) => t.id === tab) ? tab : 'summary'
+
+  if (!syncOn && !soloLocal) {
+    return (
+      <Bienvenida
+        onLocal={() => {
+          localStorage.setItem(SIN_SYNC_KEY, '1')
+          setSoloLocal(true)
+        }}
+      />
+    )
+  }
 
   return (
     <div className="app">
@@ -67,10 +102,10 @@ function Shell() {
             </div>
             <DateControl />
             <button
-              className={syncOn ? 'sync-chip sync-chip-on' : 'sync-chip'}
+              className={syncOn ? 'sync-chip sync-chip-on' : 'sync-chip sync-chip-off'}
               onClick={() => setConectando(true)}
             >
-              {syncOn ? (syncing ? 'Guardando...' : 'Sincronizado') : 'Solo este equipo'}
+              {syncOn ? (syncing ? 'Guardando...' : 'Sincronizado') : 'Sin sincronizar'}
             </button>
           </div>
           <nav className="tabs">
@@ -90,7 +125,12 @@ function Shell() {
 
         {conectando && (
           <div className="content">
-            <SyncPanel onDone={() => setConectando(false)} />
+            <SyncPanel
+              onDone={() => {
+                setConectando(false)
+                localStorage.setItem(SIN_SYNC_KEY, '1')
+              }}
+            />
           </div>
         )}
 
