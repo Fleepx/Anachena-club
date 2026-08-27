@@ -1,6 +1,6 @@
 const CFG_KEY = 'cac_git_cfg'
 
-export const SYNCED = ['items', 'events', 'setups', 'reports', 'purchases']
+export const SYNCED = ['events', 'reports', 'purchases']
 
 const pathOf = (name) => 'data/' + name + '.json'
 

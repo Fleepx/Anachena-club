@@ -17,7 +17,7 @@ import {
   writeChanged
 } from '../lib/gitstore.js'
 
-const STORAGE_KEY = 'cac-inventory-v5'
+const STORAGE_KEY = 'cac-inventory-v6'
 const InventoryContext = createContext(null)
 
 function aplicarBajas(items, lines) {
@@ -259,6 +259,30 @@ function reducer(state, action) {
         )
       }
 
+    case 'moveStock': {
+      const { itemId, from, to, qty } = action.payload
+      const cantidad = Math.floor(Number(qty) || 0)
+      if (cantidad <= 0 || from === to) return state
+
+      return {
+        ...state,
+        items: state.items.map((i) => {
+          if (i.id !== itemId) return i
+
+          const actual = i.stock ?? { [i.warehouse]: i.stockOnHand }
+          const disponible = actual[from] ?? 0
+          const mueve = Math.min(cantidad, disponible)
+          if (mueve <= 0) return i
+
+          const stock = { ...actual, [from]: disponible - mueve, [to]: (actual[to] ?? 0) + mueve }
+          const total = Object.values(stock).reduce((sum, n) => sum + n, 0)
+          const principal = Object.entries(stock).sort((a, b) => b[1] - a[1])[0]?.[0]
+
+          return { ...i, stock, stockOnHand: total, warehouse: principal ?? i.warehouse }
+        })
+      }
+    }
+
     case 'setupPatch':
       return {
         ...state,
@@ -426,7 +450,7 @@ export function InventoryProvider({ children }) {
 
       shas.current = leidos
 
-      const vacio = !slices.items || slices.items.length === 0
+      const vacio = !slices.events || slices.events.length === 0
       if (vacio) {
         const semilla = Object.fromEntries(SYNCED.map((n) => [n, latest.current[n] ?? []]))
         await writeChanged(config, null, semilla, shas.current, 'Cargar datos iniciales')
@@ -552,6 +576,7 @@ export function InventoryProvider({ children }) {
       dropDemoEvents: () => dispatch({ type: 'dropDemoEvents' }),
       eventPatch: (id, patch) => dispatch({ type: 'eventPatch', payload: { id, patch } }),
       itemPatch: (id, patch) => dispatch({ type: 'itemPatch', payload: { id, patch } }),
+      moveStock: (payload) => dispatch({ type: 'moveStock', payload }),
       importItems: (payload) => dispatch({ type: 'importItems', payload }),
       setupPatch: (id, patch) => dispatch({ type: 'setupPatch', payload: { id, patch } }),
       setupLine: (setupId, itemId, patch) =>

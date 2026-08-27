@@ -1,11 +1,18 @@
 import { useMemo, useState } from 'react'
 import { CATEGORIES } from '../data/items.js'
 import { warehouses, warehouseById } from '../data/warehouses.js'
+import MoveStock from './MoveStock.jsx'
 
 const enBodega = (item, id) =>
   item.stock ? item.stock[id] ?? 0 : item.warehouse === id ? item.stockOnHand : 0
 
 const estaEn = (item, id) => (item.stock ? (item.stock[id] ?? 0) > 0 : item.warehouse === id)
+
+const FAMILIAS = [
+  { titulo: 'Comida', cats: ['meat', 'produce', 'dry', 'dairy'] },
+  { titulo: 'Bebestibles', cats: ['drinks'] },
+  { titulo: 'Desechables', cats: ['disposable'] }
+]
 
 const repartido = (item) =>
   item.stock && Object.values(item.stock).filter((n) => n > 0).length > 1
@@ -19,6 +26,7 @@ export default function InventoryView({ type, title, subtitle }) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
   const [bodega, setBodega] = useState('all')
+  const [moviendo, setMoviendo] = useState(null)
   const [adding, setAdding] = useState(false)
   const [importing, setImporting] = useState(false)
 
@@ -40,16 +48,17 @@ export default function InventoryView({ type, title, subtitle }) {
 
 
   const isFood = type === 'consumable'
-  const separarPorBodega = !isFood && bodega === 'all' && bodegasDelPanel.length > 1
+  const familias = isFood && category === 'all' ? FAMILIAS : null
 
-  const grupos = separarPorBodega
-    ? bodegasDelPanel.map((w) => ({
-        id: w.id,
-        titulo: w.name,
-        detalle: w.desc,
-        items: visible.filter((i) => estaEn(i, w.id))
-      }))
-    : [{ id: bodega, titulo: null, detalle: null, items: visible }]
+  const grupos = familias
+    ? familias
+        .map((f) => ({
+          id: bodega,
+          titulo: f.titulo,
+          items: visible.filter((i) => f.cats.includes(i.category))
+        }))
+        .filter((g) => g.items.length > 0)
+    : [{ id: bodega, titulo: null, items: visible }]
 
   const alerts = pool.filter((i) =>
     isFood ? i.stockOnHand < (i.minStock ?? 0) : i.stockBroken > 0
@@ -118,6 +127,16 @@ export default function InventoryView({ type, title, subtitle }) {
         )}
       </section>
 
+      {moviendo && (
+        <div className="add-panel">
+          <MoveStock
+            item={pool.find((i) => i.id === moviendo)}
+            destinos={warehouses.filter((w) => w.id !== 'insumos')}
+            onDone={() => setMoviendo(null)}
+          />
+        </div>
+      )}
+
       <div className="filters">
         <input
           className="search"
@@ -132,7 +151,7 @@ export default function InventoryView({ type, title, subtitle }) {
             className={bodega === 'all' ? 'bodega bodega-active' : 'bodega'}
             onClick={() => setBodega('all')}
           >
-            <span className="bodega-letra">Todo</span>
+            <span className="bodega-sub">Todo</span>
             <span className="bodega-n">{pool.length}</span>
           </button>
           {bodegasDelPanel.map((w) => {
@@ -149,7 +168,7 @@ export default function InventoryView({ type, title, subtitle }) {
                 title={w.desc}
               >
                 <span className="bodega-letra">{w.letter}</span>
-                <span className="bodega-sub">{w.subtitle}</span>
+                <span className="bodega-sub">{w.name}</span>
                 <span className="bodega-n">{n}</span>
               </button>
             )
@@ -175,7 +194,7 @@ export default function InventoryView({ type, title, subtitle }) {
       </div>
 
       {grupos.map((g) => (
-      <div className="table-wrap" key={g.id ?? 'todo'}>
+      <div className="table-wrap" key={g.titulo ?? 'todo'}>
         {g.titulo && (
           <div className="grupo-bodega">
             <h3>{g.titulo}</h3>
@@ -211,6 +230,7 @@ export default function InventoryView({ type, title, subtitle }) {
                 </>
               )}
               <th className="hide-sm">Ubicación</th>
+              {!isFood && canEdit && <th className="num"></th>}
             </tr>
           </thead>
           <tbody>
@@ -285,6 +305,13 @@ export default function InventoryView({ type, title, subtitle }) {
                     </span>
                     {i.detail && <span className="cell-unit">{i.detail}</span>}
                   </td>
+                  {!isFood && canEdit && (
+                    <td className="num">
+                      <button className="link-btn" onClick={() => setMoviendo(i.id)}>
+                        Mover
+                      </button>
+                    </td>
+                  )}
                 </tr>
               )
             })}

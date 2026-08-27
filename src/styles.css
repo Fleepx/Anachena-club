@@ -1281,7 +1281,7 @@ button { font: inherit; cursor: pointer; }
 }
 
 @media (max-width: 620px) {
-  .bodega-sub { display: none; }
+  .bodega-letra { display: none; }
 }
 
 @media (max-width: 620px) {
