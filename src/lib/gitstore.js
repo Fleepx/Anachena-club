@@ -122,7 +122,9 @@ export async function writeChanged(cfg, prev, next, shas, note) {
   const escritos = []
 
   for (const name of SYNCED) {
-    const rows = next?.[name] ?? []
+    if (!next?.[name]) continue
+
+    const rows = next[name]
     if (JSON.stringify(prev?.[name] ?? null) === JSON.stringify(rows)) continue
 
     const body = {

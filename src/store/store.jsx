@@ -476,9 +476,9 @@ export function InventoryProvider({ children }) {
         dispatch({ type: 'hydrate', payload: operativo })
 
         const catalogo = { items: latest.current.items, setups: latest.current.setups }
-        await writeChanged(config, { items: slices.items, setups: slices.setups }, catalogo, shas.current, 'Actualizar catálogo')
+        await writeChanged(config, slices, { ...slices, ...catalogo }, shas.current, 'Actualizar catálogo')
         await writeMeta(config, { catalog: CATALOG_VERSION }, shas.current)
-        remote.current = { ...operativo, ...catalogo }
+        remote.current = { ...slices, ...catalogo }
       } else {
         aplicar(slices)
       }
