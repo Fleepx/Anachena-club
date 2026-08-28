@@ -466,6 +466,14 @@ export function InventoryProvider({ children }) {
       const vacio = !slices.items || slices.items.length === 0
       const catalogoViejo = !vacio && meta?.catalog !== CATALOG_VERSION
 
+      const enElRepo = { ...slices }
+
+      for (const n of SYNCED) {
+        const remoto = slices[n]
+        const local = latest.current[n] ?? []
+        if ((!remoto || remoto.length === 0) && local.length > 0) slices[n] = local
+      }
+
       if (vacio) {
         const semilla = Object.fromEntries(SYNCED.map((n) => [n, latest.current[n] ?? []]))
         await writeChanged(config, null, semilla, shas.current, 'Cargar datos iniciales')
@@ -478,9 +486,10 @@ export function InventoryProvider({ children }) {
         const catalogo = { items: latest.current.items, setups: latest.current.setups }
         await writeChanged(config, slices, { ...slices, ...catalogo }, shas.current, 'Actualizar catálogo')
         await writeMeta(config, { catalog: CATALOG_VERSION }, shas.current)
-        remote.current = { ...slices, ...catalogo }
+        remote.current = { ...enElRepo, ...catalogo }
       } else {
-        aplicar(slices)
+        dispatch({ type: 'hydrate', payload: slices })
+        remote.current = enElRepo
       }
 
       commit.current = await headSha(config)
