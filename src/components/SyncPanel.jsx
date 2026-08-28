@@ -3,7 +3,7 @@ import { useInventory } from '../store/store.jsx'
 import { checkAccess } from '../lib/gitstore.js'
 
 export default function SyncPanel({ onDone }) {
-  const { syncOn, connect, disconnect } = useInventory()
+  const { connect } = useInventory()
   const [owner, setOwner] = useState('Fleepx')
   const [repo, setRepo] = useState('Anachena-datos')
   const [token, setToken] = useState('')
@@ -23,38 +23,6 @@ export default function SyncPanel({ onDone }) {
     } finally {
       setProbando(false)
     }
-  }
-
-  if (syncOn) {
-    return (
-      <div className="form-panel">
-        <div className="form-head">
-          <div>
-            <h3>Sincronización activa</h3>
-            <p>Este equipo comparte los datos con los demás dispositivos conectados.</p>
-          </div>
-        </div>
-        <div className="form-foot">
-          <span className="report-hint">
-            Al desconectar, este equipo vuelve a guardar solo para sí mismo.
-          </span>
-          <div className="form-actions">
-            <button className="btn btn-ghost" onClick={() => onDone?.()}>
-              Cerrar
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                disconnect()
-                onDone?.()
-              }}
-            >
-              Desconectar este equipo
-            </button>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -92,9 +60,6 @@ export default function SyncPanel({ onDone }) {
           El token queda guardado solo en este navegador.
         </span>
         <div className="form-actions">
-          <button className="btn btn-ghost" onClick={() => onDone?.()}>
-            Ahora no
-          </button>
           <button
             className="btn btn-primary"
             disabled={probando || !token.trim()}

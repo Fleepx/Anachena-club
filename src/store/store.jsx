@@ -441,7 +441,14 @@ export function InventoryProvider({ children }) {
     let timer = null
 
     const fallo = (e) => {
-      if (vivo) setSyncError(e.message)
+      if (!vivo) return
+      if (e.status === 401) {
+        clearConfig()
+        setConfigState(null)
+        setSyncError(null)
+        return
+      }
+      setSyncError(e.message)
     }
 
     const primeraCarga = async () => {

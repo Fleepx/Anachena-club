@@ -17,18 +17,21 @@ de un evento al siguiente**.
 
 ## Lo primero: conectar el equipo
 
-Arriba a la derecha hay un botón que dice **"Solo este equipo"**. Mientras diga eso, lo que
-cargues **no lo ve ningún otro dispositivo**: queda guardado en ese navegador y nada más.
+La app **no abre sin conexión**. Al entrar pide la cuenta, el repositorio de datos y un
+token de acceso; los dos primeros vienen cargados y solo hay que pegar el token.
 
-Al conectarlo con el repositorio de datos pasa a decir **"Sincronizado"** y todos los
-equipos trabajan sobre la misma información. Los cambios de los demás aparecen solos, sin
-recargar, en unos segundos.
+No es un paso opcional a propósito: el sentido del sistema es que todos trabajen sobre la
+misma información. Un equipo que guardara solo para sí mismo llevaría una contabilidad
+paralela sin que nadie se entere, que es exactamente el problema que hay que evitar.
+
+Una vez conectado, los cambios de los demás aparecen solos, sin recargar, en unos segundos.
 
 > **El primer equipo que se conecta es el que manda.** Sube su información al repositorio y
 > los demás la bajan. Conectá primero el que tenga los datos buenos.
 
-Si algo falla aparece una franja amarilla arriba explicando qué pasó. Mientras esté ahí,
-los cambios se guardan en ese equipo pero no viajan.
+Si el token vence, la app vuelve sola a pedir uno nuevo. Si falla la conexión, aparece una
+franja amarilla arriba: mientras esté ahí los cambios se guardan en ese equipo pero no
+viajan, y la actualización se pausa para no pisar lo que todavía no se subió.
 
 ---
 

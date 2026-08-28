@@ -44,9 +44,7 @@ function DateControl() {
   )
 }
 
-const SIN_SYNC_KEY = 'cac_sin_sync'
-
-function Bienvenida({ onLocal }) {
+function Bienvenida() {
   return (
     <div className="welcome">
       <div className="welcome-box">
@@ -55,7 +53,7 @@ function Bienvenida({ onLocal }) {
           src={import.meta.env.BASE_URL + 'brand/wordmark-negro.png'}
           alt="Anachena"
         />
-        <SyncPanel onDone={onLocal} />
+        <SyncPanel />
       </div>
     </div>
   )
@@ -63,25 +61,12 @@ function Bienvenida({ onLocal }) {
 
 function Shell() {
   const [tab, setTab] = useState('summary')
-  const { canEdit, syncOn, syncError, syncing } = useInventory()
-  const [conectando, setConectando] = useState(false)
-  const [soloLocal, setSoloLocal] = useState(
-    () => localStorage.getItem(SIN_SYNC_KEY) === '1'
-  )
+  const { canEdit, syncOn, syncError } = useInventory()
 
   const visibles = TABS.filter((t) => t.id !== 'finance' || canEdit)
   const activa = visibles.some((t) => t.id === tab) ? tab : 'summary'
 
-  if (!syncOn && !soloLocal) {
-    return (
-      <Bienvenida
-        onLocal={() => {
-          localStorage.setItem(SIN_SYNC_KEY, '1')
-          setSoloLocal(true)
-        }}
-      />
-    )
-  }
+  if (!syncOn) return <Bienvenida />
 
   return (
     <div className="app">
@@ -97,12 +82,6 @@ function Shell() {
               </div>
             </div>
             <DateControl />
-            <button
-              className={syncOn ? 'sync-chip sync-chip-on' : 'sync-chip sync-chip-off'}
-              onClick={() => setConectando(true)}
-            >
-              {syncOn ? (syncing ? 'Guardando...' : 'Sincronizado') : 'Sin sincronizar'}
-            </button>
           </div>
           <nav className="tabs">
             {visibles.map((t) => (
@@ -118,17 +97,6 @@ function Shell() {
         </header>
 
         {syncError && <p className="sync-warn">{syncError}</p>}
-
-        {conectando && (
-          <div className="content">
-            <SyncPanel
-              onDone={() => {
-                setConectando(false)
-                localStorage.setItem(SIN_SYNC_KEY, '1')
-              }}
-            />
-          </div>
-        )}
 
         <main className="content" key={activa}>
           {activa === 'summary' && <Dashboard onGoTo={setTab} />}
