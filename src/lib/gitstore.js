@@ -1,6 +1,6 @@
 const CFG_KEY = 'cac_git_cfg'
 
-export const SYNCED = ['events', 'reports', 'purchases']
+export const SYNCED = ['items', 'setups', 'events', 'reports', 'purchases']
 
 const pathOf = (name) => 'data/' + name + '.json'
 
@@ -141,4 +141,33 @@ export async function writeChanged(cfg, prev, next, shas, note) {
   }
 
   return escritos
+}
+
+export async function readMeta(cfg) {
+  const file = await api(cfg, 'contents/data/meta.json?t=' + Date.now())
+  if (!file) return null
+  try {
+    return JSON.parse(decode(file.content))
+  } catch {
+    return null
+  }
+}
+
+export async function writeMeta(cfg, meta, shas) {
+  const body = {
+    message: 'Actualizar catálogo',
+    content: encode(JSON.stringify(meta, null, 2))
+  }
+  if (shas.meta) body.sha = shas.meta
+
+  const res = await api(cfg, 'contents/data/meta.json', {
+    method: 'PUT',
+    body: JSON.stringify(body)
+  })
+  shas.meta = res.content.sha
+}
+
+export async function metaSha(cfg) {
+  const file = await api(cfg, 'contents/data/meta.json')
+  return file?.sha
 }

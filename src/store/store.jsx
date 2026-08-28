@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react'
-import { items as seedItems } from '../data/items.js'
+import { CATALOG_VERSION, items as seedItems } from '../data/items.js'
 import { breakageReports as seedReports } from '../data/breakage.js'
 import { events as seedEvents } from '../data/events.js'
 import { setups, menus, cocktails } from '../data/setups.js'
@@ -11,10 +11,13 @@ import {
   SYNCED,
   clearConfig,
   headSha,
+  metaSha,
   readAll,
   readConfig,
+  readMeta,
   saveConfig,
-  writeChanged
+  writeChanged,
+  writeMeta
 } from '../lib/gitstore.js'
 
 const STORAGE_KEY = 'cac-inventory-v6'
@@ -413,6 +416,7 @@ export function InventoryProvider({ children }) {
   const [syncing, setSyncing] = useState(false)
 
   const shas = useRef({})
+  const forzar = useRef(null)
   const remote = useRef(null)
   const commit = useRef(null)
   const ready = useRef(false)
@@ -456,12 +460,25 @@ export function InventoryProvider({ children }) {
       if (!vivo) return
 
       shas.current = leidos
+      shas.current.meta = await metaSha(config)
 
-      const vacio = !slices.events || slices.events.length === 0
+      const meta = await readMeta(config)
+      const vacio = !slices.items || slices.items.length === 0
+      const catalogoViejo = !vacio && meta?.catalog !== CATALOG_VERSION
+
       if (vacio) {
         const semilla = Object.fromEntries(SYNCED.map((n) => [n, latest.current[n] ?? []]))
         await writeChanged(config, null, semilla, shas.current, 'Cargar datos iniciales')
+        await writeMeta(config, { catalog: CATALOG_VERSION }, shas.current)
         remote.current = semilla
+      } else if (catalogoViejo) {
+        const operativo = { events: slices.events, reports: slices.reports, purchases: slices.purchases }
+        dispatch({ type: 'hydrate', payload: operativo })
+
+        const catalogo = { items: latest.current.items, setups: latest.current.setups }
+        await writeChanged(config, { items: slices.items, setups: slices.setups }, catalogo, shas.current, 'Actualizar catálogo')
+        await writeMeta(config, { catalog: CATALOG_VERSION }, shas.current)
+        remote.current = { ...operativo, ...catalogo }
       } else {
         aplicar(slices)
       }
@@ -476,6 +493,23 @@ export function InventoryProvider({ children }) {
         (n) =>
           JSON.stringify(latest.current[n] ?? []) !== JSON.stringify(remote.current?.[n] ?? [])
       )
+
+    const bajar = async () => {
+      const { slices, shas: leidos } = await readAll(config)
+      if (!vivo) return
+      shas.current = { ...leidos, meta: shas.current.meta }
+      commit.current = await headSha(config)
+      aplicar(slices)
+      setSyncError(null)
+    }
+
+    forzar.current = async () => {
+      if (sinSubir()) {
+        await writeChanged(config, remote.current, latest.current, shas.current)
+        remote.current = Object.fromEntries(SYNCED.map((n) => [n, latest.current[n] ?? []]))
+      }
+      await bajar()
+    }
 
     const revisar = async () => {
       const sha = await headSha(config)
@@ -551,6 +585,7 @@ export function InventoryProvider({ children }) {
     const reportByEvent = Object.fromEntries(state.reports.map((r) => [r.eventId, r]))
     return {
       syncOn: Boolean(config),
+      refresh: () => forzar.current?.(),
       syncError,
       syncing,
       connect: (cfg) => {

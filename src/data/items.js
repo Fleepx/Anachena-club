@@ -1,3 +1,5 @@
+export const CATALOG_VERSION = 6
+
 export const CATEGORIES = {
   asset: [
     { id: 'seating', label: 'Mobiliario' },

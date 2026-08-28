@@ -61,7 +61,7 @@ function Bienvenida() {
 
 function Shell() {
   const [tab, setTab] = useState('summary')
-  const { canEdit, syncOn, syncError } = useInventory()
+  const { canEdit, syncOn, syncError, syncing, refresh } = useInventory()
 
   const visibles = TABS.filter((t) => t.id !== 'finance' || canEdit)
   const activa = visibles.some((t) => t.id === tab) ? tab : 'summary'
@@ -82,6 +82,9 @@ function Shell() {
               </div>
             </div>
             <DateControl />
+            <button className="sync-chip" disabled={syncing} onClick={() => refresh()}>
+              {syncing ? 'Guardando...' : 'Actualizar'}
+            </button>
           </div>
           <nav className="tabs">
             {visibles.map((t) => (
