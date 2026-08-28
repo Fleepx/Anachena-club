@@ -504,36 +504,35 @@ export function InventoryProvider({ children }) {
     }
 
     forzar.current = async () => {
-      if (sinSubir()) {
-        await writeChanged(config, remote.current, latest.current, shas.current)
-        remote.current = Object.fromEntries(SYNCED.map((n) => [n, latest.current[n] ?? []]))
-      }
+      if (!ready.current) return primeraCarga()
+      if (sinSubir()) await subir()
       await bajar()
     }
 
-    const revisar = async () => {
-      const sha = await headSha(config)
-      if (!vivo || sha === commit.current) return
+    const subir = async () => {
+      await writeChanged(config, remote.current, latest.current, shas.current)
+      remote.current = Object.fromEntries(SYNCED.map((n) => [n, latest.current[n] ?? []]))
+      commit.current = await headSha(config)
+      setSyncError(null)
+    }
+
+    const ciclo = async () => {
+      if (!vivo) return
 
       if (sinSubir()) {
-        setSyncError(
-          'Hay cambios de este equipo que todavía no se subieron. Se pausó la actualización para no perderlos.'
-        )
+        await subir()
         return
       }
 
-      const { slices, shas: leidos } = await readAll(config)
-      if (!vivo) return
-      shas.current = leidos
-      commit.current = sha
-      aplicar(slices)
+      const sha = await headSha(config)
+      if (!vivo || sha === commit.current) return
+      await bajar()
     }
 
-    primeraCarga()
-      .then(() => {
-        timer = setInterval(() => revisar().catch(fallo), INTERVALO_MS)
-      })
-      .catch(fallo)
+    const tick = () => (ready.current ? ciclo() : primeraCarga())
+
+    timer = setInterval(() => tick().catch(fallo), INTERVALO_MS)
+    tick().catch(fallo)
 
     return () => {
       vivo = false
@@ -553,7 +552,7 @@ export function InventoryProvider({ children }) {
 
         if (escritos.length > 0) {
           remote.current = Object.fromEntries(SYNCED.map((n) => [n, state[n] ?? []]))
-          commit.current = await headSha(config)
+          commit.current = null
         }
         setSyncError(null)
       } catch (e) {
@@ -586,6 +585,11 @@ export function InventoryProvider({ children }) {
     return {
       syncOn: Boolean(config),
       refresh: () => forzar.current?.(),
+      pendiente:
+        Boolean(config) &&
+        SYNCED.some(
+          (n) => JSON.stringify(state[n] ?? []) !== JSON.stringify(remote.current?.[n] ?? [])
+        ),
       syncError,
       syncing,
       connect: (cfg) => {
